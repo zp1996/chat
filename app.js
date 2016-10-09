@@ -22,4 +22,6 @@ io.on("connection", (socket) => {
 	});
 });
 
-server.listen(6323);
+server.listen(6323, () => {
+	console.log("server is on: http://localhost:6323/");
+});

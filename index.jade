@@ -1,3 +1,13 @@
 extends layout
 block content
-	h1 hello world
+	div.wrapper
+		p
+			span#peopel 0 
+			span user online
+		div.msg
+		div.btns
+			button#emoji emoji
+			button#image image
+			button#clear clear
+		textarea#msg-input(placeholder="enter to send")
+		button#send send
