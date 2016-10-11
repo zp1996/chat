@@ -11,6 +11,7 @@
 	background: #fff;
 	margin: 2px auto;
 	overflow: auto;
+	font-size: 12px;
 }
 button{
 	padding: 2px 8px;
@@ -29,4 +30,47 @@ button{
 	.size(50px, 102px);
 	float: right;
 	margin: 0px;
+}
+.fc{
+	color: #999;
+}
+.user-in{
+	text-align: center;
+	padding: 5px;
+	.fc;
+}
+@s: 28px;
+.user-normal-img{
+	.size(@s, @s);
+	vertical-align: middle;
+	margin: 0 3px;
+	cursor: pointer;
+	float: left;
+}
+.user-img{
+	.user-normal-img;
+	border-radius: @s / 2;
+}
+.user-name{
+	text-decoration: underline;
+	cursor: pointer;
+}
+.chat-info{
+	padding: 25px 10px 0;
+	line-height: 18px;
+	overflow: hidden;
+}
+.time{
+	margin: 0px 13px 4px 13px; 
+	width: 300px;
+	float: left;
+	.fc;
+}
+.message{
+	max-width: 240px;
+	margin-left: 13px;
+	background: #ccc;
+	padding: 5px 9px;
+	border-radius: 5px;
+	float: left;
 }

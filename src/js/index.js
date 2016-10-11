@@ -1,4 +1,5 @@
-const send = document.getElementById("send");
+const send = document.getElementById("send"),
+	img = new Image();
 const Chat = function () {
 	function Chat () {
 		this.socket = null;
@@ -56,7 +57,7 @@ const Chat = function () {
 	function updateUser (data) {
 		peopel.text(data.size);
 		if (data.flag)
-			msg.get(0).appendChild(getDom(`<div class="user-log">欢迎${data.pickname}加入群聊！</div>`));
+			msg.get(0).appendChild(getDom(`<div class="user-in">欢迎<img class="user-img" src="images/face.jpeg" /><strong class="user-name">${data.pickname}</strong> 加入群聊！</div>`));
 		else 
 			msg.get(0).appendChild(getDom(`<div class="user-log">${data.pickname}离开群聊！</div>`));
 	}
@@ -75,4 +76,9 @@ const Chat = function () {
 // 页面加载完成初始化Chat
 L(window).load(() => {
 	new Chat();
+	// loading headimg
+	img.src = "images/face.jpeg";
+	img.onerror = function () {
+		this.src = "images/logo.png";
+	};
 });
