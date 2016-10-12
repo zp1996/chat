@@ -1,5 +1,9 @@
 const send = document.getElementById("send"),
 	img = new Image();
+function formatDate () {
+	const date = new Date();
+	return `${date.getFullYear()}/${date.getMonth()}/${date.getDate()}  ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+}
 const Chat = function () {
 	function Chat () {
 		this.socket = null;
@@ -56,10 +60,25 @@ const Chat = function () {
 	};
 	function updateUser (data) {
 		peopel.text(data.size);
-		if (data.flag)
-			msg.get(0).appendChild(getDom(`<div class="user-in">欢迎<img class="user-img" src="images/face.jpeg" /><strong class="user-name">${data.pickname}</strong> 加入群聊！</div>`));
-		else 
-			msg.get(0).appendChild(getDom(`<div class="user-log">${data.pickname}离开群聊！</div>`));
+		if (data.flag) {
+			msg.get(0).appendChild(getDom(`<div class="user-in">
+				欢迎
+				<img class="user-img" src="images/face.jpeg" />
+				<strong class="user-name">${data.pickname}</strong> 
+				加入群聊！
+			</div>`));
+		} else { 
+			msg.get(0).appendChild(getDom(`<div class="chat-info">
+				<img class="user-normal-img" src="images/face.jpeg" />
+				<span class="time">
+					<strong class="user-name">system</strong>
+					${formatDate()}
+				</span>
+				<span class="message">
+					用户 ${data.pickname} 已经离开群聊
+				</span>
+			</div>`));
+		}
 	}
 	function initDom () {
 		info = L(".info");

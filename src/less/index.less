@@ -40,15 +40,18 @@ button{
 	.fc;
 }
 @s: 28px;
-.user-normal-img{
+.user-img-style{
 	.size(@s, @s);
 	vertical-align: middle;
 	margin: 0 3px;
 	cursor: pointer;
+}
+.user-normal-img{
+	.user-img-style;
 	float: left;
 }
 .user-img{
-	.user-normal-img;
+	.user-img-style;
 	border-radius: @s / 2;
 }
 .user-name{
@@ -66,11 +69,23 @@ button{
 	float: left;
 	.fc;
 }
+@c: #ccc;
 .message{
 	max-width: 240px;
 	margin-left: 13px;
-	background: #ccc;
+	background: @c;
 	padding: 5px 9px;
 	border-radius: 5px;
 	float: left;
+	position: relative;
+}
+.message::before{
+	content: "";
+	display: inline-block;
+	position: absolute;
+	border-width: 5px;
+	border-style: solid;
+	border-color: @c @c transparent transparent;
+	left: -10px;
+	top: 8px;
 }
