@@ -19,26 +19,31 @@ app.get('/', (req, res) => {
 
 io.on("connection", (socket) => {
 	// 接受并处理客户端发送的foo事件
-	socket.on("login", (pickname) => {
-		if (users[pickname]) {
+	socket.on("login", (nickname) => {
+		if (users[nickname]) {
 			socket.emit("repeat");			
 		} else {
-			socket.pickname = pickname;
-			users[pickname] = pickname;
+			socket.nickname = nickname;
+			users[nickname] = nickname;
 			socket.emit("loginSuccess");			
-			UsersChange(pickname, true);
+			UsersChange(nickname, true);
 		}
 	});
 	// 用户退出
 	socket.on("disconnect", () => {
-		delete users[socket.pickname];
-		UsersChange(socket.pickname, false);
+		delete users[socket.nickname];
+		UsersChange(socket.nickname, false);
+	});
+	// 用户发消息
+	socket.on("postmsg", (msg) => {
+		// 通知除自己外的其他用户
+		socket.broadcast.emit("newmsg", socket.nickname, msg);
 	});
 });
 
-function UsersChange (pickname, flag) {
+function UsersChange (nickname, flag) {
 	io.sockets.emit("system", {
-		pickname: pickname,
+		nickname: nickname,
 		size: Object.keys(users).length,
 		flag: flag
 	});

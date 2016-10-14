@@ -1,5 +1,4 @@
-const send = document.getElementById("send"),
-	img = new Image();
+const img = new Image();
 function formatDate () {
 	const date = new Date();
 	return `${date.getFullYear()}/${date.getMonth()}/${date.getDate()}  ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
@@ -14,7 +13,7 @@ const Chat = function () {
 		info = null,
 		peopel = null,
 		msg = null,
-		pickname = null,
+		nickname = null,
 		login = false;
 	p.init = function () {
 		this.socket = io.connect();
@@ -26,19 +25,20 @@ const Chat = function () {
 			L(".enter-name").css({
 				display: "block"
 			});	
-			initDom();			
+			initDom.call(this);			
 			this.login();
 			this.system();
+			this.newmsg();
 		});
 	};
 	p.login = function () {
 		// 对昵称进行判断
 		L("#send-name").click(() => {
-			const send = pickname.val();
+			const send = nickname.val();
 			if (send.trim()) {
 				this.socket.emit("login", send);
 			} else {
-				info.text("your pickname can't be blank or just spaces");
+				info.text("your nickname can't be blank or just spaces");
 			}
 		});
 		this.socket.on("loginSuccess", () => {
@@ -48,7 +48,7 @@ const Chat = function () {
 			});
 		});
 		this.socket.on("repeat", () => {
-			info.text("your pickname is token, please use another");
+			info.text("your nickname is token, please use another");
 		});
 	};
 	p.system = function () {
@@ -58,38 +58,61 @@ const Chat = function () {
 			}
 		});
 	};
+	p.newmsg = function () {
+		this.socket.on("newmsg", (nickname, message) => {
+			otherMsg(nickname, message);
+		});
+	};
 	function updateUser (data) {
 		peopel.text(data.size);
 		if (data.flag) {
 			msg.get(0).appendChild(getDom(`<div class="user-in">
 				欢迎
 				<img class="user-img" src="images/face.jpeg" />
-				<strong class="user-name">${data.pickname}</strong> 
+				<strong class="user-name">${data.nickname}</strong> 
 				加入群聊！
 			</div>`));
 		} else { 
-			msg.get(0).appendChild(getDom(`<div class="chat-info">
-				<img class="user-normal-img" src="images/face.jpeg" />
-				<span class="time">
-					<strong class="user-name">system</strong>
-					${formatDate()}
-				</span>
-				<span class="message">
-					用户 ${data.pickname} 已经离开群聊
-				</span>
-			</div>`));
+			otherMsg("system", `用户 ${data.nickname} 已经离开群聊`)
 		}
+	}
+	function otherMsg (user, message) {
+		const html = `<div class="chat-info">
+			<img class="user-normal-img" src="images/face.jpeg" />
+			<span class="time">
+				<strong class="user-name">${user}</strong>
+				${formatDate()}
+			</span>
+			<span class="message">
+				${message}
+			</span>
+		</div>`;
+		msg.get(0).appendChild(getDom(html));
 	}
 	function initDom () {
 		info = L(".info");
 		peopel = L("#peopel");
 		msg = L(".msg");
-		pickname = L("#pickname");
+		nickname = L("#nickname");
+		nickname.get(0).focus();
+		this.initSend();
 	}
 	function getDom (html) {
 		cache.innerHTML = html;
 		return cache.childNodes[0];
 	}
+	p.initSend = function () {
+		L("#send").click(() => {
+			const ele = L("#msg-input"),
+				message = ele.val();
+			if (message.trim()) {
+				ele.val("");
+				this.socket.emit("postmsg", message);
+			}
+			msg.get(0).appendChild(getDom(`<div>${message}</div>`));
+			ele.get(0).focus();
+		});
+	};
 	return Chat;
 }();
 // 页面加载完成初始化Chat

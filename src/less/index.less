@@ -59,20 +59,21 @@ button{
 	cursor: pointer;
 }
 .chat-info{
-	padding: 25px 10px 0;
+	padding: 25px 10px;
 	line-height: 18px;
 	overflow: hidden;
 }
+@l: 8px;
 .time{
-	margin: 0px 13px 4px 13px; 
-	width: 300px;
+	margin: 0px @l 4px; 
+	width: 400px;
 	float: left;
 	.fc;
 }
 @c: #ccc;
 .message{
 	max-width: 240px;
-	margin-left: 13px;
+	margin-left: @l;
 	background: @c;
 	padding: 5px 9px;
 	border-radius: 5px;
