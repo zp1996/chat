@@ -14,6 +14,7 @@ const Chat = function () {
 		peopel = null,
 		msg = null,
 		nickname = null,
+		append = null,
 		login = false;
 	p.init = function () {
 		this.socket = io.connect();
@@ -63,31 +64,50 @@ const Chat = function () {
 			otherMsg(nickname, message);
 		});
 	};
+	p.initSend = function () {
+		L("#send").click(() => {
+			const ele = L("#msg-input"),
+				message = ele.val();
+			if (message.trim()) {
+				ele.val("");
+				meMsg(message);
+				this.socket.emit("postmsg", message);
+			}
+			ele.get(0).focus();
+		});
+	};
 	function updateUser (data) {
 		peopel.text(data.size);
 		if (data.flag) {
-			msg.get(0).appendChild(getDom(`<div class="user-in">
+			append(`<div class="user-in">
 				欢迎
 				<img class="user-img" src="images/face.jpeg" />
 				<strong class="user-name">${data.nickname}</strong> 
 				加入群聊！
-			</div>`));
+			</div>`);
 		} else { 
 			otherMsg("system", `用户 ${data.nickname} 已经离开群聊`)
 		}
 	}
-	function otherMsg (user, message) {
-		const html = `<div class="chat-info">
+	function BaseMsg (user, message, me) {
+		me = me ? "me-" : "";
+		const html = `<div class="${me}chat-info">
 			<img class="user-normal-img" src="images/face.jpeg" />
 			<span class="time">
-				<strong class="user-name">${user}</strong>
+				<strong class="user-name">${user}</strong> 
 				${formatDate()}
 			</span>
-			<span class="message">
+			<span class="${me}message">
 				${message}
 			</span>
 		</div>`;
-		msg.get(0).appendChild(getDom(html));
+		append(html);
+	}
+	function otherMsg (user, message) {
+		BaseMsg(user, message, false);
+	}
+	function meMsg (message) {
+		BaseMsg("我", message, true);
 	}
 	function initDom () {
 		info = L(".info");
@@ -95,24 +115,20 @@ const Chat = function () {
 		msg = L(".msg");
 		nickname = L("#nickname");
 		nickname.get(0).focus();
+		append = MsgAppend(msg);
 		this.initSend();
 	}
 	function getDom (html) {
 		cache.innerHTML = html;
 		return cache.childNodes[0];
 	}
-	p.initSend = function () {
-		L("#send").click(() => {
-			const ele = L("#msg-input"),
-				message = ele.val();
-			if (message.trim()) {
-				ele.val("");
-				this.socket.emit("postmsg", message);
-			}
-			msg.get(0).appendChild(getDom(`<div>${message}</div>`));
-			ele.get(0).focus();
-		});
-	};
+	function MsgAppend (ldom) {
+		const ele = ldom.get(0);
+		return function (html) {
+			ele.appendChild(getDom(html));
+			ele.scrollTop = ele.scrollHeight;
+		};
+	}
 	return Chat;
 }();
 // 页面加载完成初始化Chat

@@ -59,7 +59,7 @@ button{
 	cursor: pointer;
 }
 .chat-info{
-	padding: 25px 10px;
+	padding: 10px;
 	line-height: 18px;
 	overflow: hidden;
 }
@@ -71,22 +71,54 @@ button{
 	.fc;
 }
 @c: #ccc;
-.message{
+.m{
 	max-width: 240px;
-	margin-left: @l;
-	background: @c;
 	padding: 5px 9px;
 	border-radius: 5px;
-	float: left;
 	position: relative;
 }
-.message::before{
+.message{
+	.m;
+	margin-left: @l;
+	background: @c;
+	float: left;
+}
+.m-before{
 	content: "";
 	display: inline-block;
-	position: absolute;
 	border-width: 5px;
 	border-style: solid;
+	position: absolute;
+	top: 8px;
+}
+.message::before{
+	.m-before;
 	border-color: @c @c transparent transparent;
 	left: -10px;
-	top: 8px;
+}
+.fr{
+	float: right;
+}
+.me-chat-info{
+	.chat-info;
+	@c: #b9d6f3;
+	text-align: right;
+	.time{
+		.fr;
+	}
+	.me-message{
+		.m;
+		.fr;
+		margin-right: 10px;
+		background: @c;
+	}
+	.me-message::before{
+		.m-before;
+		border-color: @c transparent transparent @c;
+		right: -10px;
+	}
+	.user-normal-img{
+		.user-img-style;
+		.fr;
+	}
 }
