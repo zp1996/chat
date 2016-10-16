@@ -1,35 +1,23 @@
 const img = new Image();
-function formatDate () {
-	const date = new Date();
-	return `${date.getFullYear()}/${date.getMonth()}/${date.getDate()}  ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
-}
 const Chat = function () {
 	function Chat () {
 		this.socket = null;
 		this.init();
 	}
+	const cache = {};     // 保存私聊
 	var p = Chat.prototype,
-		cache = document.createElement("div"),
-		info = null,
-		peopel = null,
-		msg = null,
-		nickname = null,
-		append = null,
-		userEle = null,
-		currentUser = null,
+		cacheDiv = document.createElement("div"),
+		info, peopel, msgArea, nickname, append, userEle,
+		currentUser = {}, 
 		login = false;
 	p.init = function () {
 		this.socket = io.connect();
 		// 监听connect事件(表示连接已经建立)
 		this.socket.on("connect", () => {
-			L(".loading").css({
-				display: "none"
-			});
-			L(".enter-name").css({
-				display: "block"
-			});	
+			L(".loading").hide();
+			L(".enter-name").show();	
 			initDom.call(this);			
-			// this.login();
+			this.login();
 			this.system();
 			this.newmsg();
 		});
@@ -46,9 +34,7 @@ const Chat = function () {
 		});
 		this.socket.on("loginSuccess", () => {
 			login = true;
-			L("#mask").css({
-				display: "none"
-			});
+			L("#mask").hide();
 		});
 		this.socket.on("repeat", () => {
 			info.text("your nickname is token, please use another");
@@ -112,16 +98,49 @@ const Chat = function () {
 		BaseMsg("我", message, true);
 	}
 	function initDom () {
+		var user = L(".active"), 
+			msgBox = L(".show");
 		info = L(".info");
 		peopel = L("#peopel");
-		msg = L(".msg");
+		msgArea = L("#msg-area").get(0);
 		nickname = L("#nickname");
 		userEle = L("#users");
-		currentUser = L(".current");
-		// nickname.get(0).focus();
+		cache["group"] = {
+			user: user,
+			ele: msgBox
+		};
+		msgBox.show();
+		Object.defineProperty(currentUser, "ele", {
+			get: () => {
+				return user;
+			},
+			set: (val) => {
+				const id = val.data("id");
+				user.removeClass("active");
+				val.addClass("active");
+				msgBox.removeClass("show");
+				if (cache[id]) {
+					msgBox = cache[id]["ele"];
+					msgBox.addClass("show");
+				} else {
+					const dom = createMsgBox(id);
+					msgArea.appendChild(dom);
+					msgBox = L(dom);
+					cache[id] = {
+						user: val,
+						ele: msgBox
+					};
+				}
+				user = val;
+			}
+		});
+		nickname.get(0).focus();
 		BindUserClick();
-		append = MsgAppend(msg);
+		append = MsgAppend(cache["group"].ele);
 		this.initSend();
+	}
+	function createMsgBox (id) {
+		return getDom(`<div class="msg show" data-id=${id}></div>`);
 	}
 	function BindUserClick () {
 		userEle.click((e) => {
@@ -129,16 +148,12 @@ const Chat = function () {
 			while (cur.tagName !== "LI") {
 				cur = cur.parentNode;
 			}
-			if (currentUser.get(0) !== cur) {
-				currentUser.removeClass("current");
-				currentUser = L(cur);
-				currentUser.addClass("current");
-			}
+			currentUser.ele = L(cur);
 		});
 	}
 	function getDom (html) {
-		cache.innerHTML = html;
-		return cache.childNodes[0];
+		cacheDiv.innerHTML = html;
+		return cacheDiv.childNodes[0];
 	}
 	function MsgAppend (ldom) {
 		const ele = ldom.get(0);
@@ -146,6 +161,13 @@ const Chat = function () {
 			ele.appendChild(getDom(html));
 			ele.scrollTop = ele.scrollHeight;
 		};
+	}
+	function formatDate () {
+		const date = new Date();
+		return `${date.getFullYear()}/${date.getMonth()}/${date.getDate()}  ${date.getHours()}:${fillTo(date.getMinutes())}:${fillTo(date.getSeconds())}`;
+	}
+	function fillTo (str) {
+		return String(str).length < 2 ? `0${str}` : str;
 	}
 	return Chat;
 }();

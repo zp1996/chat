@@ -3,7 +3,7 @@ block content
 	div.wrapper
 		div.user-list
 			ul#users
-				li.user-all.current(data-id="group")
+				li.user-all.active(data-id="group")
 					span#peopel 0 
 					span user online
 				li.user(data-id="zp")
@@ -13,7 +13,7 @@ block content
 					img.user-img-style(src="images/face.jpeg") 
 					span zpy
 		div#msg-area
-			div.msg(data-id="group")
+			div.msg.show(data-id="group")
 				p.attention 提示：点击头像或用户名可以进入私聊
 		div.btns
 			button#emoji emoji
