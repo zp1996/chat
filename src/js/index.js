@@ -15,6 +15,8 @@ const Chat = function () {
 		msg = null,
 		nickname = null,
 		append = null,
+		userEle = null,
+		currentUser = null,
 		login = false;
 	p.init = function () {
 		this.socket = io.connect();
@@ -27,7 +29,7 @@ const Chat = function () {
 				display: "block"
 			});	
 			initDom.call(this);			
-			this.login();
+			// this.login();
 			this.system();
 			this.newmsg();
 		});
@@ -114,9 +116,25 @@ const Chat = function () {
 		peopel = L("#peopel");
 		msg = L(".msg");
 		nickname = L("#nickname");
-		nickname.get(0).focus();
+		userEle = L("#users");
+		currentUser = L(".current");
+		// nickname.get(0).focus();
+		BindUserClick();
 		append = MsgAppend(msg);
 		this.initSend();
+	}
+	function BindUserClick () {
+		userEle.click((e) => {
+			var cur = e.target;
+			while (cur.tagName !== "LI") {
+				cur = cur.parentNode;
+			}
+			if (currentUser.get(0) !== cur) {
+				currentUser.removeClass("current");
+				currentUser = L(cur);
+				currentUser.addClass("current");
+			}
+		});
 	}
 	function getDom (html) {
 		cache.innerHTML = html;

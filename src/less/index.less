@@ -1,17 +1,28 @@
 @charset "utf-8";
 @import "./main";
+@msgw: 500px;
+@listw: 170px;
+@mlp: 5px;
 .wrapper{
-	.size(500px, 600px);
-	padding: 5px;
+	.size(@msgw + @listw + @mlp, 570px);
+	padding: @mlp @mlp @mlp 0px;
 	background: #ddd;
 	margin: auto;
+	box-shadow: -3px -2px 8px 1px rgba(0, 0, 0, 0.2);
 }
 .msg{
+	width: @msgw;
 	height: 430px;
 	background: #fff;
 	margin: 2px auto;
 	overflow: auto;
 	font-size: 12px;
+}
+.attention{
+	text-align: center;
+	color: #aaa;
+	font-size: 10px;
+	margin: 5px 0px;
 }
 button{
 	padding: 2px 8px;
@@ -121,4 +132,30 @@ button{
 		.user-img-style;
 		.fr;
 	}
+}
+.user-list{
+	float: left;
+	width: @listw;
+	margin-right: @mlp;
+	margin-top: 17px;
+	height: 90%;
+}
+#users{
+	list-style-type: none;
+}
+.user{
+	height: 30px;
+	line-height: 30px;
+	padding: 4px 5px;
+	overflow: hidden;
+	cursor: pointer;
+}
+.user-all{
+	.user;
+}
+.current{
+	background: #ced2cf;
+}
+#peopel{
+	margin-left: 7px;
 }
