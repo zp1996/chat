@@ -13,11 +13,12 @@ const Chat = function () {
 				msgArea.removeChild(cache[id].ele.get(0));
 				delete cache[id];
 			}
-		}, myself = "我", toPClass = "to-private";
+		}, myself = "我", group = "group", 
+		toPClass = "to-private";
 	var p = Chat.prototype,
 		cacheDiv = document.createElement("div"),
 		info, peopel, msgArea, nickname, append, userEle,
-		currentUser = {}, cacheName,
+		currentUser = {}, cacheName, msgBox,
 		login = false;
 	p.init = function () {
 		this.socket = io.connect();
@@ -48,6 +49,17 @@ const Chat = function () {
 		this.socket.on("repeat", () => {
 			info.text("your nickname is token, please use another");
 		});
+		this.socket.on("pcmsg", (data) => {
+			const source = data.source;
+			if (cache[source]) {
+				currentUser.ele = cache[source].user;
+			} else {
+				const dom = createUserBox(source);
+				userEle.get(0).appendChild(dom.get(0));
+				currentUser.ele = dom;
+			}
+			otherMsg(source, data.msg, msgBox.get(0));
+		});
 	};
 	p.system = function () {
 		this.socket.on("system", (data) => {
@@ -66,9 +78,17 @@ const Chat = function () {
 			const ele = L("#msg-input"),
 				message = ele.val();
 			if (message.trim()) {
+				const target = currentUser.ele;
 				ele.val("");
-				meMsg(message);
-				this.socket.emit("postmsg", message);
+				meMsg(message, msgBox.get(0));
+				if (target === group) {
+					this.socket.emit("postmsg", message);
+				} else {
+					this.socket.emit("pc", {
+						target: target,
+						msg: message
+					});
+				}
 			}
 			ele.get(0).focus();
 		});
@@ -86,7 +106,7 @@ const Chat = function () {
 			otherMsg("system", `用户 ${data.nickname} 已经离开群聊`)
 		}
 	}
-	function BaseMsg (user, message, me) {
+	function BaseMsg (user, message, me, dom) {
 		me = me ? "me-" : "";
 		const html = `<div class="${me}chat-info">
 			<img class="user-normal-img ${toPClass}" alt="${user}" src="images/face.jpeg" />
@@ -98,23 +118,23 @@ const Chat = function () {
 				${message}
 			</span>
 		</div>`;
-		append(html);
+		append(html, dom);
 	}
-	function otherMsg (user, message) {
-		BaseMsg(user, message, false);
+	function otherMsg (user, message, dom) {
+		BaseMsg(user, message, false, dom);
 	}
-	function meMsg (message) {
-		BaseMsg(myself, message, true);
+	function meMsg (message, dom) {
+		BaseMsg(myself, message, true, dom);
 	}
 	function initDom () {
-		var user = L(".active"), 
-			msgBox = L(".show");
+		var user = L(".active"); 
+		msgBox = L(".show");
 		info = L(".info");
 		peopel = L("#peopel");
 		msgArea = L("#msg-area").get(0);
 		nickname = L("#nickname");
 		userEle = L("#users");
-		cache["group"] = {
+		cache[group] = {
 			user: user,
 			ele: msgBox
 		};
@@ -146,7 +166,7 @@ const Chat = function () {
 		nickname.get(0).focus();
 		BindUserClick();
 		BindImgClick();
-		append = MsgAppend(cache["group"].ele);
+		append = MsgAppend(cache[group].ele);
 		this.initSend();
 	}
 	function createMsgBox (id) {
@@ -198,10 +218,11 @@ const Chat = function () {
 		return cacheDiv.childNodes[0];
 	}
 	function MsgAppend (ldom) {
-		const ele = ldom.get(0);
-		return function (html) {
-			ele.appendChild(getDom(html));
-			ele.scrollTop = ele.scrollHeight;
+		var ele = ldom.get(0);
+		return function (html, dom) {
+			const e = dom || ele;
+			e.appendChild(getDom(html));
+			e.scrollTop = e.scrollHeight;
 		};
 	}
 	function formatDate () {

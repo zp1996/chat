@@ -24,7 +24,10 @@ io.on("connection", (socket) => {
 			socket.emit("repeat");			
 		} else {
 			socket.nickname = nickname;
-			users[nickname] = nickname;
+			users[nickname] = {
+				name: nickname,
+				socket: socket
+			};
 			socket.emit("loginSuccess");			
 			UsersChange(nickname, true);
 		}
@@ -38,6 +41,19 @@ io.on("connection", (socket) => {
 	socket.on("postmsg", (msg) => {
 		// 通知除自己外的其他用户
 		socket.broadcast.emit("newmsg", socket.nickname, msg);
+	});
+	// 私聊
+	socket.on("pc", (data) => {
+		var target = data.target;
+		if (users[target]) {
+			users[target].socket.emit("pcmsg", {
+				target: target,
+				source: socket.nickname,
+				msg: data.msg
+			});
+		} else {
+			socket.emit("nouser");
+		}
 	});
 });
 
