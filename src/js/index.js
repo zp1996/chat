@@ -4,11 +4,20 @@ const Chat = function () {
 		this.socket = null;
 		this.init();
 	}
-	const cache = {};     // 保存私聊
+	const cache = {
+			del: function (id) {
+				if (currentUser.ele === id) {
+					currentUser.ele = cache["group"].user;
+				}
+				userEle.get(0).removeChild(cache[id].user.get(0));
+				msgArea.removeChild(cache[id].ele.get(0));
+				delete cache[id];
+			}
+		}, myself = "我", toPClass = "to-private";
 	var p = Chat.prototype,
 		cacheDiv = document.createElement("div"),
 		info, peopel, msgArea, nickname, append, userEle,
-		currentUser = {}, 
+		currentUser = {}, cacheName,
 		login = false;
 	p.init = function () {
 		this.socket = io.connect();
@@ -25,9 +34,9 @@ const Chat = function () {
 	p.login = function () {
 		// 对昵称进行判断
 		L("#send-name").click(() => {
-			const send = nickname.val();
-			if (send.trim()) {
-				this.socket.emit("login", send);
+			cacheName = nickname.val();
+			if (cacheName.trim()) {
+				this.socket.emit("login", cacheName);
 			} else {
 				info.text("your nickname can't be blank or just spaces");
 			}
@@ -69,7 +78,7 @@ const Chat = function () {
 		if (data.flag) {
 			append(`<div class="user-in">
 				欢迎
-				<img class="user-img" src="images/face.jpeg" />
+				<img class="user-img ${toPClass}" alt="${data.nickname === cacheName ? myself : data.nickname}" src="images/face.jpeg" />
 				<strong class="user-name">${data.nickname}</strong> 
 				加入群聊！
 			</div>`);
@@ -80,7 +89,7 @@ const Chat = function () {
 	function BaseMsg (user, message, me) {
 		me = me ? "me-" : "";
 		const html = `<div class="${me}chat-info">
-			<img class="user-normal-img" src="images/face.jpeg" />
+			<img class="user-normal-img ${toPClass}" alt="${user}" src="images/face.jpeg" />
 			<span class="time">
 				<strong class="user-name">${user}</strong> 
 				${formatDate()}
@@ -95,7 +104,7 @@ const Chat = function () {
 		BaseMsg(user, message, false);
 	}
 	function meMsg (message) {
-		BaseMsg("我", message, true);
+		BaseMsg(myself, message, true);
 	}
 	function initDom () {
 		var user = L(".active"), 
@@ -112,7 +121,7 @@ const Chat = function () {
 		msgBox.show();
 		Object.defineProperty(currentUser, "ele", {
 			get: () => {
-				return user;
+				return user.data("id");
 			},
 			set: (val) => {
 				const id = val.data("id");
@@ -124,8 +133,8 @@ const Chat = function () {
 					msgBox.addClass("show");
 				} else {
 					const dom = createMsgBox(id);
-					msgArea.appendChild(dom);
-					msgBox = L(dom);
+					msgArea.appendChild(dom.get(0));
+					msgBox = dom;
 					cache[id] = {
 						user: val,
 						ele: msgBox
@@ -136,20 +145,53 @@ const Chat = function () {
 		});
 		nickname.get(0).focus();
 		BindUserClick();
+		BindImgClick();
 		append = MsgAppend(cache["group"].ele);
 		this.initSend();
 	}
 	function createMsgBox (id) {
-		return getDom(`<div class="msg show" data-id=${id}></div>`);
+		return L(`<div class="msg show" data-id=${id}>
+				<p class="attention">与${id}私聊中</p>
+			</div>`);
+	}
+	function createUserBox (id) {
+		return L(`<li class="user" data-id="${id}">
+				<img class="user-img-style", src="images/face.jpeg" />
+				${id}
+				<span class="count">0</span>
+				<span class="close">╳</span>
+			</li>`);
+	}
+	function BindImgClick () {
+		L("#group").click((e) => {
+			var cur = e.target;
+			if (~cur.className.indexOf(toPClass) && cur.alt !== "我") {
+				const id = cur.alt;
+				if (!cache[id]) {
+					const dom = createUserBox(id);
+					userEle.get(0).appendChild(dom.get(0));
+					currentUser.ele = dom;
+				}
+				currentUser.ele = cache[id].user;
+			}
+		});
 	}
 	function BindUserClick () {
 		userEle.click((e) => {
 			var cur = e.target;
+			if (cur.className === "close") {
+				release(cur);
+				return void 0;
+			}
 			while (cur.tagName !== "LI") {
 				cur = cur.parentNode;
 			}
 			currentUser.ele = L(cur);
 		});
+	}
+	function release (dom) {
+		dom = dom.parentNode;
+		cache.del(dom.getAttribute("data-id"));
 	}
 	function getDom (html) {
 		cacheDiv.innerHTML = html;

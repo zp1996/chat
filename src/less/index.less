@@ -144,22 +144,60 @@ button{
 #users{
 	list-style-type: none;
 }
+@uh: 30px;
 .user{
-	height: 30px;
-	line-height: 30px;
+	position: relative;
+	height: @uh;
+	line-height: @uh;
 	padding: 4px 5px;
 	overflow: hidden;
 	cursor: pointer;
+	margin-bottom: 1px;
+}
+@ac: #ced2cf;
+.user:hover{
+	background: @ac;
+}
+.user:hover .close{
+	visibility: visible;
 }
 .user-all{
 	.user;
 }
 .active{
-	background: #ced2cf;
+	background: @ac;
 }
 .show{
 	display: block;
 }
 #peopel{
 	margin-left: 7px;
+}
+.user-common{
+	font-size: 10px;
+	position: absolute;
+}
+@uc: #e24013;
+.count{
+	.user-common;
+	@h: 12px;
+	top: (@uh - @h) / 2;
+	text-align: center;
+	right: 30px;
+	.size(@h, @h);
+	line-height: @h;
+	padding: 2px;
+	background: @uc;
+	border-radius: @h / 2;
+	color: #fff;
+	visibility: hidden;
+}
+.close{
+	.user-common;
+	transform: scale(0.7);
+	right: 5px;
+	visibility: hidden;
+}
+.close:hover{
+	color: @uc;
 }
