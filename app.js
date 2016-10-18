@@ -35,6 +35,7 @@ io.on("connection", (socket) => {
 	// 用户退出
 	socket.on("disconnect", () => {
 		delete users[socket.nickname];
+		console.log(socket.nickname);
 		UsersChange(socket.nickname, false);
 	});
 	// 用户发消息
