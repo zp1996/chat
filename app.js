@@ -52,7 +52,8 @@ io.on("connection", (socket) => {
 				msg: data.msg
 			});
 		} else {
-			socket.emit("nouser");
+			const msg = target === "system" ? "傲娇的system管理员不陪聊~" : "该用户已经下线";
+			socket.emit("nouser", msg);
 		}
 	});
 });

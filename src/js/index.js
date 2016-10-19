@@ -14,7 +14,8 @@ const Chat = function () {
 				delete cache[id];
 			}
 		}, myself = "我", group = "group", 
-		toPClass = "to-private";
+		toPClass = "to-private",
+		imageRE = /^image\//;
 	var p = Chat.prototype,
 		cacheDiv = document.createElement("div"),
 		info, peopel, msgArea, nickname, append, userEle,
@@ -58,8 +59,8 @@ const Chat = function () {
 			otherMsg(source, data.msg, msgBox.get(0));
 		});
 		// 私聊没有该用户
-		this.socket.on("nouser", () => {
-			append(`<p class="attention">该用户已经下线</p>`, msgBox.get(0));
+		this.socket.on("nouser", (msg) => {
+			append(`<p class="attention">${msg}</p>`, msgBox.get(0));
 		});
 		// 群聊新消息
 		this.socket.on("newmsg", (nickname, message) => {
@@ -91,17 +92,40 @@ const Chat = function () {
 			if (message.trim()) {
 				const target = currentUser.ele;
 				ele.val("");
-				meMsg(message, msgBox.get(0));
-				if (target === group) {
-					this.socket.emit("postmsg", message);
-				} else {
-					this.socket.emit("pc", {
-						target: target,
-						msg: message
-					});
-				}
+				this.message(target, message);
 			}
 			ele.get(0).focus();
+		});
+	};
+	p.message = function (target, msg) {
+		meMsg(msg, msgBox.get(0));
+		if (target === group) {
+			this.socket.emit("postmsg", msg);
+		} else {
+			this.socket.emit("pc", {
+				target: target,
+				msg: msg
+			});
+		}
+	};
+	p.initImg = function () {
+		const ele = L("#file"),
+			self = this;
+		L("#image").click(() => {
+			ele.get(0).click();
+		});
+		ele.change(function () {
+			if (this.files.length !== 0) {
+				const file = this.files[0];
+				if (imageRE.test(file.type)) {
+					const reader = new FileReader();
+					reader.onload = (e) => {
+						this.value = "";
+						self.message(currentUser.ele, BurnImg(e.target.result));
+					};
+					reader.readAsDataURL(file);
+				}
+			}
 		});
 	};
 	function updateUser (data) {
@@ -136,6 +160,9 @@ const Chat = function () {
 	}
 	function meMsg (message, dom) {
 		BaseMsg(myself, message, true, dom);
+	}
+	function BurnImg (url) {
+		return `<img src="${url}" class="msg-img" />`
 	}
 	function initDom () {
 		var user = L(".active"); 
@@ -183,6 +210,7 @@ const Chat = function () {
 		BindImgClick();
 		append = MsgAppend(cache[group].ele);
 		this.initSend();
+		this.initImg();
 	}
 	function setNum (id) {
 		var num = 0;
