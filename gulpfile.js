@@ -32,7 +32,7 @@ gulp.task("js", () => {
 						 		presets: ['es2015']
 						 }))
 						 .pipe(jshint())
-						 //.pipe(uglify())    // 上线后打开
+						 .pipe(uglify())    // 上线后打开
 						 .pipe(gulp.dest("./build/js"));
 });
 
