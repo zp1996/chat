@@ -58,7 +58,7 @@ const Chat = function () {
 			msgBox = cache[source].ele;
 			otherMsg(source, data.msg, msgBox.get(0));
 		});
-		// 私聊没有该用户
+		// 私聊用户下线
 		this.socket.on("nouser", (msg) => {
 			append(`<p class="attention">${msg}</p>`, msgBox.get(0));
 		});
