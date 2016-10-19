@@ -3,7 +3,9 @@ const express = require("express"),
 	app = express(),
 	server = require("http").createServer(app),
 	io = require("socket.io").listen(server),
-	users = {};
+	users = {},
+	MAX_LEAVE_TIME = 300,
+	PONG_TIME = 1000;
 
 app.set("views", "./");
 app.set("view engine", "jade");
@@ -26,7 +28,8 @@ io.on("connection", (socket) => {
 			socket.nickname = nickname;
 			users[nickname] = {
 				name: nickname,
-				socket: socket
+				socket: socket,
+				lastTime: new Date() / 1000
 			};
 			socket.emit("loginSuccess");			
 			UsersChange(nickname, true);
@@ -34,8 +37,10 @@ io.on("connection", (socket) => {
 	});
 	// 用户退出
 	socket.on("disconnect", () => {
-		delete users[socket.nickname];
-		UsersChange(socket.nickname, false);
+		if (socket.nickname && users[socket.nickname]) {
+			delete users[socket.nickname];
+			UsersChange(socket.nickname, false);
+		}
 	});
 	// 用户发消息
 	socket.on("postmsg", (msg) => {
@@ -56,6 +61,7 @@ io.on("connection", (socket) => {
 			socket.emit("nouser", msg);
 		}
 	});
+	// 心跳检测机制
 });
 
 function UsersChange (nickname, flag) {
