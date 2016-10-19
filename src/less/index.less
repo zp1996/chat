@@ -181,14 +181,14 @@ button{
 .count{
 	.user-common;
 	@h: 12px;
-	top: (@uh - @h) / 2;
+	top: @h;
 	text-align: center;
 	right: 30px;
-	.size(@h, @h);
+	.size(@h - 1px, @h - 1px);
 	line-height: @h;
 	padding: 2px;
 	background: @uc;
-	border-radius: @h / 2;
+	border-radius: @h;
 	color: #fff;
 	visibility: hidden;
 }

@@ -28,8 +28,49 @@ const Chat = function () {
 			L(".enter-name").show();	
 			initDom.call(this);			
 			this.login();
-			this.system();
-			this.newmsg();
+			this.register();
+		});
+	};
+	p.register = function () {
+		// 登录成功
+		this.socket.on("loginSuccess", () => {
+			login = true;
+			L("#mask").hide();
+		});
+		// 用户名重复
+		this.socket.on("repeat", () => {
+			info.text("your nickname is token, please use another");
+		});
+		// 私聊
+		this.socket.on("pcmsg", (data) => {
+			var source = data.source,
+				msgBox = null;
+			if (!cache[source]) {
+				cache[source] = {
+					user: createUserBox(source),
+					ele: createMsgBox(source, true)
+				};
+				setNum(source);
+				userEle.get(0).appendChild(cache[source].user.get(0));
+			}
+			cache[source].num += 1;
+			msgBox = cache[source].ele;
+			otherMsg(source, data.msg, msgBox.get(0));
+		});
+		// 私聊没有该用户
+		this.socket.on("nouser", () => {
+			append(`<p class="attention">该用户已经下线</p>`, msgBox.get(0));
+		});
+		// 群聊新消息
+		this.socket.on("newmsg", (nickname, message) => {
+			cache[group].num += 1;
+			otherMsg(nickname, message);
+		});
+		// 用户管理
+		this.socket.on("system", (data) => {
+			if (login) {
+				updateUser(data);
+			}
 		});
 	};
 	p.login = function () {
@@ -41,36 +82,6 @@ const Chat = function () {
 			} else {
 				info.text("your nickname can't be blank or just spaces");
 			}
-		});
-		this.socket.on("loginSuccess", () => {
-			login = true;
-			L("#mask").hide();
-		});
-		this.socket.on("repeat", () => {
-			info.text("your nickname is token, please use another");
-		});
-		this.socket.on("pcmsg", (data) => {
-			const source = data.source;
-			if (cache[source]) {
-				currentUser.ele = cache[source].user;
-			} else {
-				const dom = createUserBox(source);
-				userEle.get(0).appendChild(dom.get(0));
-				currentUser.ele = dom;
-			}
-			otherMsg(source, data.msg, msgBox.get(0));
-		});
-	};
-	p.system = function () {
-		this.socket.on("system", (data) => {
-			if (login) {
-				updateUser(data);
-			}
-		});
-	};
-	p.newmsg = function () {
-		this.socket.on("newmsg", (nickname, message) => {
-			otherMsg(nickname, message);
 		});
 	};
 	p.initSend = function () {
@@ -138,6 +149,7 @@ const Chat = function () {
 			user: user,
 			ele: msgBox
 		};
+		setNum(group);
 		msgBox.show();
 		Object.defineProperty(currentUser, "ele", {
 			get: () => {
@@ -151,6 +163,7 @@ const Chat = function () {
 				if (cache[id]) {
 					msgBox = cache[id]["ele"];
 					msgBox.addClass("show");
+					cache[id].num = 0;
 				} else {
 					const dom = createMsgBox(id);
 					msgArea.appendChild(dom.get(0));
@@ -159,7 +172,9 @@ const Chat = function () {
 						user: val,
 						ele: msgBox
 					};
+					setNum(id);
 				}
+				msgBox.get(0).scrollTop = msgBox.get(0).scrollHeight;
 				user = val;
 			}
 		});
@@ -169,10 +184,31 @@ const Chat = function () {
 		append = MsgAppend(cache[group].ele);
 		this.initSend();
 	}
-	function createMsgBox (id) {
-		return L(`<div class="msg show" data-id=${id}>
+	function setNum (id) {
+		var num = 0;
+		const ele = cache[id].user.find(".count");
+		Object.defineProperty(cache[id], "num", {
+			get: () => {
+				return num;
+			},
+			set: function (val) {
+				if (currentUser.ele === id) return void 0;
+				if (val === 0) {
+					ele.css({ visibility: "hidden" });
+				} else if (val === 1) {
+					ele.css({ visibility: "visible" });
+				}
+				num = val;
+				ele.text(num);
+			}
+		});
+	}
+	function createMsgBox (id, hide) {
+		const dom = L(`<div class="msg${hide ? "" : " show"}" data-id=${id}>
 				<p class="attention">与${id}私聊中</p>
 			</div>`);
+		msgArea.appendChild(dom.get(0));
+		return dom;
 	}
 	function createUserBox (id) {
 		return L(`<li class="user" data-id="${id}">

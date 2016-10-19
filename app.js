@@ -20,7 +20,7 @@ app.get('/', (req, res) => {
 io.on("connection", (socket) => {
 	// 接受并处理客户端发送的foo事件
 	socket.on("login", (nickname) => {
-		if (users[nickname]) {
+		if (users[nickname] || nickname === "system") {
 			socket.emit("repeat");			
 		} else {
 			socket.nickname = nickname;
@@ -35,7 +35,6 @@ io.on("connection", (socket) => {
 	// 用户退出
 	socket.on("disconnect", () => {
 		delete users[socket.nickname];
-		console.log(socket.nickname);
 		UsersChange(socket.nickname, false);
 	});
 	// 用户发消息
