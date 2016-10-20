@@ -20,7 +20,7 @@ app.get('/', (req, res) => {
 });
 
 io.on("connection", (socket) => {
-	// 接受并处理客户端发送的foo事件
+	// 用户登录
 	socket.on("login", (nickname) => {
 		if (users[nickname] || nickname === "system") {
 			socket.emit("repeat");			
