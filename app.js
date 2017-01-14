@@ -5,7 +5,8 @@ const express = require("express"),
 	io = require("socket.io").listen(server),
 	users = {},
 	MAX_LEAVE_TIME = 300,
-	PONG_TIME = 3000;
+	PONG_TIME = 3000,
+	port = process.env.port || 2017;
 
 app.set("views", "./");
 app.set("view engine", "jade");
@@ -92,6 +93,6 @@ function nowSecond () {
 	return Math.floor(new Date() / 1000);
 }
 
-server.listen(6323, () => {
-	console.log("server is on: http://localhost:6323/");
+server.listen(port, () => {
+	console.log(`server is on: http://localhost:{port}/`);
 });

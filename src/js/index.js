@@ -291,7 +291,7 @@ const Chat = function () {
 	}
 	function formatDate () {
 		const date = new Date();
-		return `${date.getFullYear()}/${date.getMonth()}/${date.getDate()}  ${date.getHours()}:${fillTo(date.getMinutes())}:${fillTo(date.getSeconds())}`;
+		return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}  ${date.getHours()}:${fillTo(date.getMinutes())}:${fillTo(date.getSeconds())}`;
 	}
 	function fillTo (str) {
 		return String(str).length < 2 ? `0${str}` : str;
