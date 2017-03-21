@@ -13,7 +13,7 @@ const Chat = function () {
 				msgArea.removeChild(cache[id].ele.get(0));
 				delete cache[id];
 			}
-		}, myself = "我", group = "group", 
+		}, myself = "我", group = "group",
 		toPClass = "to-private",
 		imageRE = /^image\//;
 	var p = Chat.prototype,
@@ -26,8 +26,8 @@ const Chat = function () {
 		// 监听connect事件(表示连接已经建立)
 		this.socket.on("connect", () => {
 			L(".loading").hide();
-			L(".enter-name").show();	
-			initDom.call(this);			
+			L(".enter-name").show();
+			initDom.call(this);
 			this.login();
 			this.register();
 		});
@@ -77,7 +77,7 @@ const Chat = function () {
 	p.login = function () {
 		// 对昵称进行判断
 		L("#send-name").click(() => {
-			cacheName = nickname.val();
+			cacheName = encodeHTML(nickname.val());
 			if (cacheName.trim()) {
 				this.socket.emit("login", cacheName);
 			} else {
@@ -92,7 +92,7 @@ const Chat = function () {
 			if (message.trim()) {
 				const target = currentUser.ele;
 				ele.val("");
-				this.message(target, message);
+				this.message(target, encodeHTML(message));
 			}
 			ele.get(0).focus();
 		});
@@ -134,10 +134,10 @@ const Chat = function () {
 			append(`<div class="user-in">
 				欢迎
 				<img class="user-img ${toPClass}" alt="${data.nickname === cacheName ? myself : data.nickname}" src="images/face.jpeg" />
-				<strong class="user-name">${data.nickname}</strong> 
+				<strong class="user-name">${data.nickname}</strong>
 				加入群聊！
 			</div>`);
-		} else { 
+		} else {
 			otherMsg("system", `用户 ${data.nickname} 已经离开群聊`)
 		}
 	}
@@ -146,7 +146,7 @@ const Chat = function () {
 		const html = `<div class="${me}chat-info">
 			<img class="user-normal-img ${toPClass}" alt="${user}" src="images/face.jpeg" />
 			<span class="time">
-				<strong class="user-name">${user}</strong> 
+				<strong class="user-name">${user}</strong>
 				${formatDate()}
 			</span>
 			<span class="${me}message">
@@ -165,7 +165,7 @@ const Chat = function () {
 		return `<img src="${url}" class="msg-img" />`
 	}
 	function initDom () {
-		var user = L(".active"); 
+		var user = L(".active");
 		msgBox = L(".show");
 		info = L(".info");
 		peopel = L("#peopel");
@@ -296,6 +296,14 @@ const Chat = function () {
 	function fillTo (str) {
 		return String(str).length < 2 ? `0${str}` : str;
 	}
+	function encodeHTML (val) {
+  		return String(val)
+			.replace(/&/g, "&amp;")
+    		.replace(/</g, "&lt;")
+    		.replace(/>/g, "&gt;")
+    		.replace(/"/g, "&quot;")
+    		.replace(/'/g, "&#39;");
+	};
 	return Chat;
 }();
 // 页面加载完成初始化Chat

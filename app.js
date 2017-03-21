@@ -24,7 +24,7 @@ io.on("connection", (socket) => {
 	// 用户登录
 	socket.on("login", (nickname) => {
 		if (users[nickname] || nickname === "system") {
-			socket.emit("repeat");			
+			socket.emit("repeat");
 		} else {
 			socket.nickname = nickname;
 			users[nickname] = {
@@ -32,7 +32,7 @@ io.on("connection", (socket) => {
 				socket: socket,
 				lastSpeakTime: nowSecond()
 			};
-			socket.emit("loginSuccess");			
+			socket.emit("loginSuccess");
 			UsersChange(nickname, true);
 		}
 	});
@@ -77,7 +77,7 @@ function pong () {
 			users[k].socket.emit("disconnect");
 			socket.emit("nouser", "由于长时间未说话，您已经掉线，请重新刷新页面");
 			socket = null;
-		} 
+		}
 	}
 }
 // 心跳检测
